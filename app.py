@@ -1,3 +1,5 @@
+from datetime import datetime
+import os
 import tkinter as tk
 from tkinter import ttk
 import numpy as np
@@ -107,11 +109,31 @@ class AHPApp:
         for i, weight in enumerate(weights):
             result_str += f"{self.criteria[i]}: {weight:.3f}\n"
 
+        # Zapisz wyniki do pliku
+        self.save_results(result_str)
+
         result_text.config(state="normal")
         result_text.insert(tk.END, result_str)
         result_text.config(state="disabled")
 
         summary_root.mainloop()
+
+    def save_results(self, result_str):
+        # Utwórz katalog PODSUMOWANIA, jeśli nie istnieje
+        summary_dir = "podsumowania"
+        if not os.path.exists(summary_dir):
+            os.makedirs(summary_dir)
+
+        # Utwórz nazwę pliku zgodnie z wymaganiami
+        now = datetime.now()
+        date_str = now.strftime("%d-%m-%Y")
+        time_str = now.strftime("%H-%M")
+        filename = f"podsumowanie_{date_str}_{time_str}.txt"
+        filepath = os.path.join(summary_dir, filename)
+
+        # Zapisz wyniki do pliku
+        with open(filepath, "w") as file:
+            file.write(result_str)
 
     def calculate_weights(self):
         for i in range(len(self.criteria)):
