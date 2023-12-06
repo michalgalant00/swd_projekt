@@ -10,7 +10,7 @@ class AHPApp:
         self.master.title("Wspomaganie decyzji przy kupnie auta - AHP")
 
         # Ustawienia rozmiaru okna
-        self.window_width = 1200
+        self.window_width = 600
         self.window_height = 300
 
         # Kryteria i alternatywy
@@ -38,7 +38,7 @@ class AHPApp:
         self.welcome_frame.grid(row=0, column=0, columnspan=3)
 
         # Tworzenie etykiety powitalnej
-        ttk.Label(self.welcome_frame, text="Witaj w ankietach AHP!").grid(row=0, column=0, columnspan=2, pady=(10, 0))
+        ttk.Label(self.welcome_frame, text="Witaj w ankiecie AHP dotyczącej kryteriów kupna auta").grid(row=0, column=0, columnspan=2, pady=(10, 0))
 
         # Przycisk do przejścia do pierwszego porównania
         ttk.Button(self.welcome_frame, text="Rozpocznij ankietę", command=self.show_next_comparison).grid(row=1, column=0, columnspan=2, pady=(10, 0))
@@ -63,7 +63,12 @@ class AHPApp:
         form_frame.grid(row=0, column=0, columnspan=3)
 
         # Porównanie aktualnych kryteriów
-        i, j = divmod(self.current_comparison, len(self.criteria))
+        while True:
+            i, j = divmod(self.current_comparison, len(self.criteria))
+            if i != j and self.scale_vars[i][j] is None:
+                break
+            self.current_comparison += 1
+
         criterion = self.criteria[i]
         col_criterion = self.criteria[j]
 
@@ -73,10 +78,15 @@ class AHPApp:
 
         # Tworzenie etykiet i pól do wprowadzania danych
         ttk.Label(form_frame, text=f"Pytanie {self.current_comparison + 1}").grid(row=0, column=0, columnspan=3)
-        ttk.Label(form_frame, text=criterion).grid(row=1, column=0, sticky="e")
-        ttk.Label(form_frame, text=f"vs {col_criterion}").grid(row=1, column=1, padx=(5, 0))
-        scale_var = tk.DoubleVar()
-        ttk.Scale(form_frame, variable=scale_var, from_=1, to=10, orient="horizontal", length=100).grid(row=1, column=2)
+        ttk.Label(form_frame, text=f"{criterion}").grid(row=1, column=0, sticky="e")
+
+        # Oblicz środkową wartość skali
+        middle_value = (1 + 10) / 2
+
+        scale_var = tk.DoubleVar(value=middle_value)
+        ttk.Scale(form_frame, variable=scale_var, from_=1, to=10, orient="horizontal", length=100).grid(row=1, column=1)
+
+        ttk.Label(form_frame, text=f"{col_criterion}").grid(row=1, column=2, padx=(0, 5))
         self.scale_vars[i][j] = scale_var  # Przypisanie DoubleVar do listy
 
         # Przycisk do przejścia do kolejnego porównania
