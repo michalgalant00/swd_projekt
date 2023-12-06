@@ -44,7 +44,7 @@ class AHPApp:
         ttk.Button(self.welcome_frame, text="Rozpocznij ankietę", command=self.show_next_comparison).grid(row=1, column=0, columnspan=2, pady=(10, 0))
 
     def show_next_comparison(self):
-        if self.current_comparison < len(self.criteria) * (len(self.criteria) - 1):
+        if self.current_comparison < len(self.criteria) * (len(self.criteria) - 1) / 2:
             # Przejdź do kolejnego porównania
             self.create_comparison_gui()
         else:
@@ -63,37 +63,44 @@ class AHPApp:
         form_frame.grid(row=0, column=0, columnspan=3)
 
         # Porównanie aktualnych kryteriów
-        while True:
-            i, j = divmod(self.current_comparison, len(self.criteria))
-            if i != j and self.scale_vars[i][j] is None:
-                break
+        i, j = self.get_next_comparison_pair()
+        if i is not None:
+            criterion = self.criteria[i]
+            col_criterion = self.criteria[j]
+
+            # Zeruj zawartość okna
+            for widget in form_frame.winfo_children():
+                widget.destroy()
+
+            # Tworzenie etykiet i pól do wprowadzania danych
+            ttk.Label(form_frame, text=f"Pytanie {self.current_comparison + 1}").grid(row=0, column=0, columnspan=3)
+            ttk.Label(form_frame, text=f"{criterion}").grid(row=1, column=0, sticky="e")
+
+            # Oblicz środkową wartość skali
+            middle_value = (1 + 10) / 2
+
+            scale_var = tk.DoubleVar(value=middle_value)
+            ttk.Scale(form_frame, variable=scale_var, from_=1, to=10, orient="horizontal", length=100).grid(row=1, column=1)
+
+            ttk.Label(form_frame, text=f"{col_criterion}").grid(row=1, column=2, padx=(0, 5))
+            self.scale_vars[i][j] = scale_var  # Przypisanie DoubleVar do listy
+
+            # Przycisk do przejścia do kolejnego porównania
+            ttk.Button(self.master, text="Przejdź dalej", command=self.show_next_comparison).grid(row=2, column=0, columnspan=3, pady=(10, 0))
+
+            # Zwiększenie licznika porównań
             self.current_comparison += 1
+        else:
+            # Jeśli nie ma więcej par do porównania, przejdź do podsumowania
+            self.show_summary()
 
-        criterion = self.criteria[i]
-        col_criterion = self.criteria[j]
 
-        # Zeruj zawartość okna
-        for widget in form_frame.winfo_children():
-            widget.destroy()
-
-        # Tworzenie etykiet i pól do wprowadzania danych
-        ttk.Label(form_frame, text=f"Pytanie {self.current_comparison + 1}").grid(row=0, column=0, columnspan=3)
-        ttk.Label(form_frame, text=f"{criterion}").grid(row=1, column=0, sticky="e")
-
-        # Oblicz środkową wartość skali
-        middle_value = (1 + 10) / 2
-
-        scale_var = tk.DoubleVar(value=middle_value)
-        ttk.Scale(form_frame, variable=scale_var, from_=1, to=10, orient="horizontal", length=100).grid(row=1, column=1)
-
-        ttk.Label(form_frame, text=f"{col_criterion}").grid(row=1, column=2, padx=(0, 5))
-        self.scale_vars[i][j] = scale_var  # Przypisanie DoubleVar do listy
-
-        # Przycisk do przejścia do kolejnego porównania
-        ttk.Button(self.master, text="Przejdź dalej", command=self.show_next_comparison).grid(row=2, column=0, columnspan=3, pady=(10, 0))
-
-        # Zwiększenie licznika porównań
-        self.current_comparison += 1
+    def get_next_comparison_pair(self):
+        for i in range(len(self.criteria)):
+            for j in range(i + 1, len(self.criteria)):
+                if self.scale_vars[i][j] is None and self.scale_vars[j][i] is None:
+                    return i, j
+        return None, None
 
     def show_summary(self):
         # Usuń ramkę porównania
