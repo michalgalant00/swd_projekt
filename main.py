@@ -21,6 +21,9 @@ class AHPApp:
         # Lista DoubleVar do przechowywania wartości skali
         self.scale_vars = [[None for _ in range(len(self.criteria))] for _ in range(len(self.criteria))]
 
+        # Aktualne porównanie kryteriów
+        self.current_comparison = 0
+
         # GUI
         self.create_welcome_gui()
 
@@ -35,47 +38,80 @@ class AHPApp:
         # Tworzenie etykiety powitalnej
         ttk.Label(self.welcome_frame, text="Witaj w ankietach AHP!").grid(row=0, column=0, columnspan=2, pady=(10, 0))
 
-        # Przycisk do przejścia do ankiety
-        ttk.Button(self.welcome_frame, text="Rozpocznij ankietę", command=self.show_survey_frame).grid(row=1, column=0, columnspan=2, pady=(10, 0))
+        # Przycisk do przejścia do pierwszego porównania
+        ttk.Button(self.welcome_frame, text="Rozpocznij ankietę", command=self.show_next_comparison).grid(row=1, column=0, columnspan=2, pady=(10, 0))
 
-    def show_survey_frame(self):
+    def show_next_comparison(self):
+        if self.current_comparison < len(self.criteria) * (len(self.criteria) - 1):
+            # Przejdź do kolejnego porównania
+            self.create_comparison_gui()
+        else:
+            # Przejdź do podsumowania
+            self.show_summary()
+
+    def create_comparison_gui(self):
         # Usuń ekran powitalny
         self.welcome_frame.destroy()
 
-        # Przejdź do ramki ankiety
-        self.create_survey_gui()
-
-    def create_survey_gui(self):
-        # Ustawienia rozmiaru okna ankiety
+        # Ustawienia rozmiaru okna porównania
         self.master.geometry(f"{self.window_width}x{self.window_height}")
 
         # Ramka do formularza
         form_frame = ttk.Frame(self.master, padding="10")
         form_frame.grid(row=0, column=0, columnspan=3)
 
+        # Porównanie aktualnych kryteriów
+        i, j = divmod(self.current_comparison, len(self.criteria))
+        criterion = self.criteria[i]
+        col_criterion = self.criteria[j]
+
+        # Zeruj zawartość okna
+        for widget in form_frame.winfo_children():
+            widget.destroy()
+
         # Tworzenie etykiet i pól do wprowadzania danych
-        for i, criterion in enumerate(self.criteria):
-            ttk.Label(form_frame, text=criterion).grid(row=i, column=0, sticky="e")
-            for j, col_criterion in enumerate(self.criteria):
-                if i == j:
-                    continue
+        ttk.Label(form_frame, text=f"Pytanie {self.current_comparison + 1}").grid(row=0, column=0, columnspan=3)
+        ttk.Label(form_frame, text=criterion).grid(row=1, column=0, sticky="e")
+        ttk.Label(form_frame, text=f"vs {col_criterion}").grid(row=1, column=1, padx=(5, 0))
+        scale_var = tk.DoubleVar()
+        ttk.Scale(form_frame, variable=scale_var, from_=1, to=10, orient="horizontal", length=100).grid(row=1, column=2)
+        self.scale_vars[i][j] = scale_var  # Przypisanie DoubleVar do listy
 
-                ttk.Label(form_frame, text=f"vs {col_criterion}").grid(row=i, column=j*2+1, padx=(5, 0))
-                scale_var = tk.DoubleVar()
-                ttk.Scale(form_frame, variable=scale_var, from_=1, to=10, orient="horizontal", length=100).grid(row=i, column=j*2+2)
-                self.scale_vars[i][j] = scale_var  # Przypisanie DoubleVar do listy
+        # Przycisk do przejścia do kolejnego porównania
+        ttk.Button(self.master, text="Przejdź dalej", command=self.show_next_comparison).grid(row=2, column=0, columnspan=3, pady=(10, 0))
 
-        # Przycisk do obliczeń
-        ttk.Button(self.master, text="Oblicz", command=self.calculate_weights).grid(row=1, column=0, columnspan=3, pady=(10, 0))
+        # Zwiększenie licznika porównań
+        self.current_comparison += 1
 
-        # Wyniki
-        result_frame = ttk.Frame(self.master, padding="10")
-        result_frame.grid(row=2, column=0, columnspan=3)
+    def show_summary(self):
+        # Usuń ramkę porównania
+        self.master.destroy()
+
+        # Utwórz ramkę podsumowania
+        summary_root = tk.Tk()
+        summary_root.title("Podsumowanie wyników")
+
+        result_frame = ttk.Frame(summary_root, padding="10")
+        result_frame.grid(row=0, column=0)
 
         ttk.Label(result_frame, text="Wagi").grid(row=0, column=0, columnspan=2)
 
-        self.result_text = tk.Text(result_frame, height=len(self.criteria), width=20, state="disabled")
-        self.result_text.grid(row=1, column=0, columnspan=2)
+        result_text = tk.Text(result_frame, height=len(self.criteria), width=20, state="disabled")
+        result_text.grid(row=1, column=0, columnspan=2)
+
+        # Oblicz wagi i wyświetl wyniki
+        self.calculate_weights()
+        weights = ahp(self.criteria_matrix)
+        result_str = ""
+
+        for i, weight in enumerate(weights):
+            result_str += f"{self.criteria[i]}: {weight:.3f}\n"
+
+        result_text.config(state="normal")
+        result_text.insert(tk.END, result_str)
+        result_text.config(state="disabled")
+
+        summary_root.mainloop()
 
     def calculate_weights(self):
         for i in range(len(self.criteria)):
@@ -83,18 +119,8 @@ class AHPApp:
                 if i == j:
                     continue
                 scale_var = self.scale_vars[i][j]
-                self.criteria_matrix[i, j] = scale_var.get()
-
-        weights = ahp(self.criteria_matrix)
-        result_str = ""
-
-        for i, weight in enumerate(weights):
-            result_str += f"{self.criteria[i]}: {weight:.3f}\n"
-
-        self.result_text.config(state="normal")
-        self.result_text.delete(1.0, tk.END)
-        self.result_text.insert(tk.END, result_str)
-        self.result_text.config(state="disabled")
+                if scale_var is not None:
+                    self.criteria_matrix[i, j] = scale_var.get()
 
 def ahp(matrix):
     col_sums = matrix.sum(axis=0)
