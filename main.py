@@ -7,6 +7,10 @@ class AHPApp:
         self.master = master
         self.master.title("Wspomaganie decyzji przy kupnie auta - AHP")
 
+        # Ustawienia rozmiaru okna
+        self.window_width = 1200
+        self.window_height = 300
+
         # Kryteria i alternatywy
         self.criteria = ["Rok produkcji", "Cena", "Stan mechaniczny", "Stan lakierniczy", "Wyposażenie"]
         self.alternatives = ["Samochód A", "Samochód B", "Samochód C", "Samochód D"]
@@ -18,9 +22,33 @@ class AHPApp:
         self.scale_vars = [[None for _ in range(len(self.criteria))] for _ in range(len(self.criteria))]
 
         # GUI
-        self.create_gui()
+        self.create_welcome_gui()
 
-    def create_gui(self):
+    def create_welcome_gui(self):
+        # Ustawienia rozmiaru okna powitalnego
+        self.master.geometry(f"{self.window_width}x{self.window_height}")
+
+        # Ramka ekranu powitalnego
+        self.welcome_frame = ttk.Frame(self.master, padding="10")
+        self.welcome_frame.grid(row=0, column=0, columnspan=3)
+
+        # Tworzenie etykiety powitalnej
+        ttk.Label(self.welcome_frame, text="Witaj w ankietach AHP!").grid(row=0, column=0, columnspan=2, pady=(10, 0))
+
+        # Przycisk do przejścia do ankiety
+        ttk.Button(self.welcome_frame, text="Rozpocznij ankietę", command=self.show_survey_frame).grid(row=1, column=0, columnspan=2, pady=(10, 0))
+
+    def show_survey_frame(self):
+        # Usuń ekran powitalny
+        self.welcome_frame.destroy()
+
+        # Przejdź do ramki ankiety
+        self.create_survey_gui()
+
+    def create_survey_gui(self):
+        # Ustawienia rozmiaru okna ankiety
+        self.master.geometry(f"{self.window_width}x{self.window_height}")
+
         # Ramka do formularza
         form_frame = ttk.Frame(self.master, padding="10")
         form_frame.grid(row=0, column=0, columnspan=3)
