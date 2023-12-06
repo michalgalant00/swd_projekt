@@ -5,11 +5,11 @@ import numpy as np
 class AHPApp:
     def __init__(self, master):
         self.master = master
-        self.master.title("AHP Car Decision Support System")
+        self.master.title("Wspomaganie decyzji przy kupnie auta - AHP")
 
         # Kryteria i alternatywy
-        self.criteria = ["Year", "Price", "Mechanical Condition", "Paint Condition", "Equipment", "Operating Costs", "Fuel Consumption"]
-        self.alternatives = ["Car A", "Car B", "Car C", "Car D"]
+        self.criteria = ["Rok produkcji", "Cena", "Stan mechaniczny", "Stan lakierniczy", "Wyposażenie"]
+        self.alternatives = ["Samochód A", "Samochód B", "Samochód C", "Samochód D"]
 
         # Macierz porównań par kryteriów
         self.criteria_matrix = np.ones((len(self.criteria), len(self.criteria)), dtype=float)
@@ -38,13 +38,13 @@ class AHPApp:
                 self.scale_vars[i][j] = scale_var  # Przypisanie DoubleVar do listy
 
         # Przycisk do obliczeń
-        ttk.Button(self.master, text="Calculate", command=self.calculate_weights).grid(row=1, column=0, columnspan=3, pady=(10, 0))
+        ttk.Button(self.master, text="Oblicz", command=self.calculate_weights).grid(row=1, column=0, columnspan=3, pady=(10, 0))
 
         # Wyniki
         result_frame = ttk.Frame(self.master, padding="10")
         result_frame.grid(row=2, column=0, columnspan=3)
 
-        ttk.Label(result_frame, text="Weights").grid(row=0, column=0, columnspan=2)
+        ttk.Label(result_frame, text="Wagi").grid(row=0, column=0, columnspan=2)
 
         self.result_text = tk.Text(result_frame, height=len(self.criteria), width=20, state="disabled")
         self.result_text.grid(row=1, column=0, columnspan=2)
