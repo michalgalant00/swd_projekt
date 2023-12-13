@@ -14,8 +14,8 @@ class AHPApp:
         self.window_height = 300
 
         # Kryteria i alternatywy
-        self.criteria = ["Rok produkcji", "Cena", "Stan mechaniczny", "Stan lakierniczy", "Wyposażenie"]
-        self.alternatives = ["Samochód A", "Samochód B", "Samochód C", "Samochód D"]
+        self.criteria = ["Spalanie", "Cena", "Stan mechaniczny", "Stan lakierniczy", "Wyposażenie"]
+        self.slider_values = [1/9, 1/7, 1/5, 1/3, 1, 3, 5, 7, 9]
 
         # Macierz porównań par kryteriów
         self.criteria_matrix = np.ones((len(self.criteria), len(self.criteria)), dtype=float)
@@ -52,6 +52,8 @@ class AHPApp:
             self.show_summary()
 
     def create_comparison_gui(self):
+        def on_slider_change(value):
+            print(f"Wartość suwaka: {self.slider_values[int(value)]}")
         # Usuń ekran powitalny
         self.welcome_frame.destroy()
 
@@ -76,11 +78,14 @@ class AHPApp:
             ttk.Label(form_frame, text=f"Pytanie {self.current_comparison + 1}").grid(row=0, column=0, columnspan=3)
             ttk.Label(form_frame, text=f"{criterion}").grid(row=1, column=0, sticky="e")
 
-            # Oblicz środkową wartość skali
-            middle_value = (1 + 10) / 2
+            # Oblicz środkową wartość suwaka
+            middle_value = len(self.slider_values) // 2
 
+            # Ustawienia suwaka
             scale_var = tk.DoubleVar(value=middle_value)
-            ttk.Scale(form_frame, variable=scale_var, from_=1, to=10, orient="horizontal", length=100).grid(row=1, column=1)
+            ttk.Scale(form_frame, variable=scale_var, from_=0, to=len(self.slider_values)-1, orient="horizontal", length=200,
+                command=lambda x:
+                    scale_var.set(round(float(x)))).grid(row=1, column=1)
 
             ttk.Label(form_frame, text=f"{col_criterion}").grid(row=1, column=2, padx=(0, 5))
             self.scale_vars[i][j] = scale_var  # Przypisanie DoubleVar do listy
