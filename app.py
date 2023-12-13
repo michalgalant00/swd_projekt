@@ -15,9 +15,9 @@ class AHPApp:
         self.window_height = 300
 
         # Kryteria i alternatywy
-        self.criteria = ["Spalanie", "Cena", "Stan mechaniczny", "Stan lakierniczy", "Wyposażenie"]
+        # self.criteria = ["Spalanie", "Cena", "Stan mechaniczny", "Stan lakierniczy", "Wyposażenie"]
         # tmp do debugowania
-        # self.criteria = ["kryt 1", "kryt 2", "kryt 3"]
+        self.criteria = ["kryt 1", "kryt 2", "kryt 3"]
         self.slider_values = [1/9, 1/7, 1/5, 1/3, 1, 3, 5, 7, 9]
 
         # Macierz porównań par kryteriów
@@ -184,6 +184,8 @@ class AHPApp:
             summary_text.insert(tk.END, f"Czas: {czas} sekund, Odpowiedź: {odpowiedz}\n")
 
         summary_text.config(state="disabled")
+
+        self.save_results(summary_text.get("1.0", tk.END))
 
         summary_root.mainloop()
 
