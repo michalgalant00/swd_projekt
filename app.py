@@ -256,11 +256,10 @@ class AHPApp:
         random_index = self.calculate_random_index(len(self.criteria))
         consistency_ratio = consistency_index / random_index
 
-        # Dodaj wpływ czasów międzyczasowych na współczynnik konsekwentności
+        # Add the influence of intermediate times on the consistency ratio
         for (i, j), times_values in self.intermediate_times_per_question.items():
             total_time = sum(time for time, _ in times_values)
-            average_time = total_time / len(times_values)
-            consistency_ratio -= average_time / total_time
+            consistency_ratio += total_time / len(times_values)
 
         return consistency_ratio
 
