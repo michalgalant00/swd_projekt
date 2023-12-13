@@ -211,7 +211,7 @@ class AHPApp:
         for (i, j), times_values in self.intermediate_times_per_question.items():
             summary_text.insert(tk.END, f"{i+1} vs {j+1}:\n")
             for time, value in times_values:
-                summary_text.insert(tk.END, f"Czas: {time} sekund, Odpowiedź: {value}\n")
+                summary_text.insert(tk.END, f"Czas: {round(time, 2)} sekund, Odpowiedź: {Fraction(value).limit_denominator() if '.' in str(value) else value}\n")
 
         summary_text.config(state="disabled")
 
