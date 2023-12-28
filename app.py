@@ -15,10 +15,9 @@ class AHPApp:
         self.window_width = 600
         self.window_height = 300
 
-        # Kryteria i alternatywy
-        # self.criteria = ["Spalanie", "Cena", "Stan mechaniczny", "Stan lakierniczy", "Wyposażenie"]
-        # tmp do debugowania
-        self.criteria = ["kryt 1", "kryt 2", "kryt 3"]
+        # Kryteria
+        self.criteria = ["Spalanie", "Cena", "Stan mechaniczny", "Stan lakierniczy", "Wyposażenie"]
+        # Wartości
         self.slider_values = [1/9, 1/7, 1/5, 1/3, 1, 3, 5, 7, 9]
 
         # Macierz porównań par kryteriów
@@ -35,7 +34,7 @@ class AHPApp:
         self.current_j = None
 
         # Czas ostatniej udzielonej odpowiedzi
-        self.last_answer_time = datetime.now()  # Initialize with the current time
+        self.last_answer_time = datetime.now()  # Inicjalizacja z bieżącym czasem
         # Lista przechowująca wartości międzyczasowe i wybrane wartości
         self.intermediate_times_per_question = {}
 
@@ -125,11 +124,13 @@ class AHPApp:
     def on_slider_release(self, value):
         # Funkcja wywoływana po puszczeniu suwaka
         print(f"Suwak został puszczony na wartości: {self.slider_values[int(value)]}")
+
         # Dodaj informację o puszczeniu suwaka do listy wartości międzyczasowych
         elapsed_time = datetime.now() - self.last_answer_time
         elapsed_seconds = elapsed_time.total_seconds()
         selected_value = self.slider_values[int(value)]
-        # Add information about releasing the slider to the dictionary
+        
+        # Dodaj informacje o puszczeniu suwaka do słownika
         question_key = (self.current_i, self.current_j)
         if question_key in self.intermediate_times_per_question:
             self.intermediate_times_per_question[question_key].append((elapsed_seconds, selected_value))
@@ -256,7 +257,7 @@ class AHPApp:
         random_index = self.calculate_random_index(len(self.criteria))
         consistency_ratio = consistency_index / random_index
 
-        # Add the influence of intermediate times on the consistency ratio
+        # Dodaj wpływ czasów międzyczasowych na współczynnik konsekwentności
         for (i, j), times_values in self.intermediate_times_per_question.items():
             total_time = sum(time for time, _ in times_values)
             consistency_ratio += total_time / len(times_values)
